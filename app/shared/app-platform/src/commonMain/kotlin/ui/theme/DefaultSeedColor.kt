@@ -7,9 +7,12 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.wizard
+package me.him188.ani.app.ui.theme
 
-import me.him188.ani.app.ui.foundation.AbstractViewModel
+import androidx.compose.ui.graphics.Color
 
-class WelcomeViewModel : AbstractViewModel() {
-}
+// region Note: You should only add UI properties when it is accessed both `ui-foundation` and `app-data`
+
+val DefaultSeedColor = Color(0xFF4F378B)
+
+// endregion

@@ -93,11 +93,18 @@ interface AniNavigator {
         currentNavigator.navigate(NavRoutes.Welcome)
     }
 
+    fun navigateOnboarding() {
+        currentNavigator.navigate(NavRoutes.Onboarding)
+    }
+
     fun navigateMain(
         page: MainScreenPage,
         requestFocus: Boolean = false
     ) {
-        currentNavigator.popBackStack<NavRoutes.Main>(inclusive = false)
+        currentNavigator.navigate(NavRoutes.Main(page)) {
+            popUpTo(NavRoutes.Welcome) { inclusive = true }
+            popUpTo(NavRoutes.Onboarding) { inclusive = true }
+        }
     }
 
     /**

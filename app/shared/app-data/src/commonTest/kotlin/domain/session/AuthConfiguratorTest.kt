@@ -7,16 +7,8 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.wizard
+package me.him188.ani.app.domain.session
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-
-@Composable
-fun WelcomePage(
-    vm: WelcomeViewModel,
-    modifier: Modifier = Modifier,
-) {
+class AuthConfiguratorTest : AbstractBangumiSessionManagerTest() {
 
 }
-

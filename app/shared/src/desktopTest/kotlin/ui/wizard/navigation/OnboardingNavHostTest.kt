@@ -9,7 +9,6 @@
 
 package me.him188.ani.app.ui.wizard.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
-import me.him188.ani.app.ui.wizard.WizardDefaults
 import kotlin.test.Test
 
 private const val TAG_INDICATOR_TEXT = "indicatorText"
@@ -33,7 +31,7 @@ private const val TAG_BUTTON_NEXT_STEP = "buttonNextStep"
 private const val TAG_BUTTON_PREV_STEP = "buttonPrevStep"
 private const val TAG_STEP_CONTENT_TEXT = "stepContentText"
 
-class WizardNavHostTest {
+class OnboardingNavHostTest {
     private val SemanticsNodeInteractionsProvider.indicatorText
         get() = onAllNodesWithTag(TAG_INDICATOR_TEXT, useUnmergedTree = true)
     private val SemanticsNodeInteractionsProvider.indicatorTitle
@@ -51,29 +49,6 @@ class WizardNavHostTest {
         WizardNavHost(
             wizardController,
             modifier = Modifier.fillMaxSize(),
-            indicatorBar = {
-                WizardDefaults.StepTopAppBar(
-                    currentStep = it.currentStepIndex + 1,
-                    totalStep = it.stepCount,
-                    indicatorStepTextTestTag = TAG_INDICATOR_TEXT,
-                ) {
-                    it.currentStep.stepName.invoke()
-                }
-            },
-            controlBar = {
-                WizardDefaults.StepControlBar(
-                    forwardAction = {
-                        Box(Modifier.testTag(TAG_BUTTON_NEXT_STEP)) {
-                            it.currentStep.forwardButton.invoke()
-                        }
-                    },
-                    backwardAction = {
-                        Box(Modifier.testTag(TAG_BUTTON_PREV_STEP)) {
-                            it.currentStep.backwardButton.invoke()
-                        }
-                    },
-                )
-            },
         ) {
             step(
                 "step_1",

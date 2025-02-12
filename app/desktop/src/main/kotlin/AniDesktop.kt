@@ -70,7 +70,6 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.platform.AniBuildConfigDesktop
 import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.AppStartupTasks
@@ -118,7 +117,6 @@ import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import org.koin.mp.KoinPlatform
 import org.openani.mediamp.MediampPlayerFactory
 import org.openani.mediamp.MediampPlayerFactoryLoader
 import org.openani.mediamp.compose.MediampPlayerSurfaceProviderLoader
@@ -430,7 +428,6 @@ object AniDesktop {
 private fun FrameWindowScope.MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
-    val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     AniApp {
         val themeSettings = LocalThemeSettings.current
         val titleBarThemeController = LocalTitleBarThemeController.current
@@ -475,10 +472,7 @@ private fun FrameWindowScope.MainWindowContent(
                     },
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
-                        val uiSettings by settingsRepository.uiSettings.flow.collectAsStateWithLifecycle(null)
-                        uiSettings?.let {
-                            AniAppContent(aniNavigator, NavRoutes.Main(it.mainSceneInitialPage))
-                        }
+                        AniAppContent(aniNavigator)
                         Toast({ showing }, { Text(content) })
                     }
                 }

@@ -19,8 +19,11 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import me.him188.ani.utils.coroutines.update
 
 
@@ -31,40 +34,28 @@ fun rememberWizardController(): WizardController {
 
 /**
  * 向导界面 [WizardNavHost] 的控制器, 存储向导的状态和步骤
- *
- * @param onFinish 所有步骤完成后的回调, 会传入所有设置的步骤数据. 需要结束向导页
  */
 @Stable
 class WizardController() {
-    private val _controller = MutableStateFlow<NavHostController?>(null)
+    private val navController = MutableStateFlow<NavHostController?>(null)
 
     private val steps = MutableStateFlow(emptyMap<String, WizardStep>())
-    private val currentStepKey: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val currentStepKey = combine(
+        navController.filterNotNull().flatMapLatest { it.currentBackStackEntryFlow }, steps,
+    ) { currentBackEntry, steps -> steps[currentBackEntry.destination.route]?.key }
 
-    val navController: StateFlow<NavHostController?> = _controller
-
-    val state: Flow<WizardState?> = combine(
-        steps,
-        currentStepKey,
-    ) { steps, currentStepKey ->
-        val currentStep = steps[currentStepKey] ?: return@combine null
+    val state: Flow<WizardState?> = steps.map { step ->
         WizardState(
-            steps = steps.map { it.value },
-            currentStep = currentStep,
-            currentStepIndex = steps.entries.indexOfFirst { it.key == currentStepKey },
-            stepCount = steps.size,
+            steps = step.map { it.value },
         )
     }
 
     fun setNavController(controller: NavHostController) {
-        _controller.update { controller }
+        navController.update { controller }
     }
 
     fun setupSteps(steps: Map<String, WizardStep>) {
         this.steps.update { steps }
-        if (currentStepKey.value == null || steps[currentStepKey.value] == null) {
-            currentStepKey.update { steps.entries.firstOrNull()?.key }
-        }
     }
 
     @Composable
@@ -75,28 +66,23 @@ class WizardController() {
         }
     }
 
-    fun goForward() {
+    suspend fun goForward() {
         move(forward = true)
     }
 
-    fun goBackward() {
+    suspend fun goBackward() {
         move(forward = false)
     }
 
-    private fun move(forward: Boolean) {
+    private suspend fun move(forward: Boolean) {
         val navController = navController.value ?: return
-        val currentStepKey = currentStepKey.value ?: return
+        val currentStepKey = currentStepKey.filterNotNull().first()
         val stepEntries = steps.value.entries.toList()
         val currentStepIndex = stepEntries.indexOfFirst { it.key == currentStepKey }
-
-        if (currentStepIndex == 0 && !forward) return
-        if (currentStepIndex == stepEntries.size - 1 && forward) return
 
         val targetStepKey = stepEntries
             .getOrNull(currentStepIndex + (if (forward) 1 else -1))?.value?.key ?: return
         val targetStep = steps.value[targetStepKey] ?: return
-
-        this.currentStepKey.update { targetStepKey }
 
         val prevBackEntry = navController.previousBackStackEntry
         if (!forward
@@ -112,8 +98,5 @@ class WizardController() {
 
 @Stable
 class WizardState(
-    val steps: List<WizardStep>,
-    val currentStep: WizardStep,
-    val currentStepIndex: Int,
-    val stepCount: Int,
+    val steps: List<WizardStep>
 )
